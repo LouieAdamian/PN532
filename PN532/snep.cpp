@@ -50,40 +50,43 @@ int8_t SNEP::write(const uint8_t *buf, uint8_t len, uint16_t timeout)
 
 int16_t SNEP::read(uint8_t *buf, uint8_t len, uint16_t timeout)
 {
+	Serial.println("SNEP::read-0");//LADebug
+	Serial.println(timeout);//LADebug
 	if (0 >= llcp.activate(timeout)) {
-		DMSG("failed to activate PN532 as a target\n");
+		//DMSG("failed to activate PN532 as a target\n");
+		Serial.println("SNEP::read-1");//LADebug
 		return -1;
 	}
-
-	if (0 >= llcp.waitForConnection(timeout)) {
+		if (0 >= llcp.waitForConnection(timeout)) {
 		DMSG("failed to set up a connection\n");
+		Serial.println("SNEP::read-2");//LADebug
 		return -2;
 	}
-
 	uint16_t status = llcp.read(buf, len);
 	if (6 > status) {
+		Serial.println("SNEP::read-3");//LADebug
 		return -3;
 	}
-
 
 	// check SNEP version
 	if (SNEP_DEFAULT_VERSION != buf[0]) {
 		DMSG("The received SNEP message's major version is different\n");
 		// To-do: send Unsupported Version response
+		Serial.println("SNEP::read-4");//LADebug
 		return -4;
 	}
-
 	// expect a put request
 	if (SNEP_REQUEST_PUT != buf[1]) {
 		DMSG("Expect a put request\n");
 		return -4;
 	}
+	Serial.println("SNEP::read-5");//LADebug
 
 	// check message's length
 	uint32_t length = (buf[2] << 24) + (buf[3] << 16) + (buf[4] << 8) + buf[5];
 	// length should not be more than 244 (header + body < 255, header = 6 + 3 + 2)
 	if (length > (status - 6)) {
-		DMSG("The SNEP message is too large: "); 
+		DMSG("The SNEP message is too large: ");
         DMSG_INT(length);
         DMSG_INT(status - 6);
 		DMSG("\n");

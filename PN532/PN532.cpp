@@ -823,14 +823,13 @@ bool PN532::inListPassiveTarget()
 }
 
 int8_t PN532::tgInitAsTarget(const uint8_t* command, const uint8_t len, const uint16_t timeout){
-
+  Serial.println("PN532::tgInitAsTarget-a");//LADebug
   int8_t status = HAL(writeCommand)(command, len);
     if (status < 0) {
         return -1;
     }
-    Serial.println("tgInitAsTarget");
+
     status = HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer), timeout);
-    Serial.println(status);
     if (status > 0) {
         return 1;
     } else if (PN532_TIMEOUT == status) {
@@ -845,6 +844,7 @@ int8_t PN532::tgInitAsTarget(const uint8_t* command, const uint8_t len, const ui
  */
 int8_t PN532::tgInitAsTarget(uint16_t timeout)
 {
+  Serial.println("PN532::tgInitAsTarget-b");//LADebug
     const uint8_t command[] = {
         PN532_COMMAND_TGINITASTARGET,
         0,

@@ -26,8 +26,8 @@
 #define C_APDU_P1_SELECT_BY_NAME 0x04
 
 // Response APDU
-#define R_APDU_SW1_COMMAND_COMPLETE 0x90
-#define R_APDU_SW2_COMMAND_COMPLETE 0x00
+#define R_APDU_SW1_COMMAND_COMPLETE 0x90 
+#define R_APDU_SW2_COMMAND_COMPLETE 0x00 
 
 #define R_APDU_SW1_NDEF_TAG_NOT_FOUND 0x6a
 #define R_APDU_SW2_NDEF_TAG_NOT_FOUND 0x82
@@ -91,12 +91,11 @@ bool EmulateTag::emulate(const uint16_t tgInitAsTargetTimeout){
   if(uidPtr != 0){  // if uid is set copy 3 bytes to nfcid1
     memcpy(command + 4, uidPtr, 3);
   }
-  Serial.println("alhpa");//LADebug
+
   if(1 != pn532.tgInitAsTarget(command,sizeof(command), tgInitAsTargetTimeout)){
     DMSG("tgInitAsTarget failed or timed out!");
     return false;
   }
-  Serial.println("beta");//LADebug
 
   uint8_t compatibility_container[] = {
     0, 0x0F,
@@ -110,7 +109,7 @@ bool EmulateTag::emulate(const uint16_t tgInitAsTargetTimeout){
     0x00,       // read access 0x0 = granted
     0x00        // write access 0x0 = granted | 0xFF = deny
   };
-  Serial.println("gamma");//LADebug
+
   if(tagWriteable == false){
     compatibility_container[14] = 0xFF;
   }
@@ -125,7 +124,6 @@ bool EmulateTag::emulate(const uint16_t tgInitAsTargetTimeout){
   bool runLoop = true;
 
   while(runLoop){
-    Serial.println("runLoop");
     status = pn532.tgGetData(rwbuf, sizeof(rwbuf));
     if(status < 0){
       DMSG("tgGetData failed!\n");
@@ -156,14 +154,14 @@ bool EmulateTag::emulate(const uint16_t tgInitAsTargetTimeout){
 	  setResponse(TAG_NOT_FOUND, rwbuf, &sendlen);
 	}
 	break;
-      case C_APDU_P1_SELECT_BY_NAME:
+      case C_APDU_P1_SELECT_BY_NAME: 
         const uint8_t ndef_tag_application_name_v2[] = {0, 0x7, 0xD2, 0x76, 0x00, 0x00, 0x85, 0x01, 0x01 };
 	if(0 == memcmp(ndef_tag_application_name_v2, rwbuf + C_APDU_P2, sizeof(ndef_tag_application_name_v2))){
 	  setResponse(COMMAND_COMPLETE, rwbuf, &sendlen);
 	} else{
 	  DMSG("function not supported\n");
 	  setResponse(FUNCTION_NOT_SUPPORTED, rwbuf, &sendlen);
-	}
+	} 
 	break;
       }
       break;
@@ -189,11 +187,11 @@ bool EmulateTag::emulate(const uint16_t tgInitAsTargetTimeout){
 	}
 	break;
       }
-      break;
+      break;    
     case ISO7816_UPDATE_BINARY:
       if(!tagWriteable){
 	  setResponse(FUNCTION_NOT_SUPPORTED, rwbuf, &sendlen);
-      } else{
+      } else{      
 	if( p1p2_length > NDEF_MAX_LENGTH){
 	  setResponse(MEMORY_FAILURE, rwbuf, &sendlen);
 	}
@@ -201,7 +199,7 @@ bool EmulateTag::emulate(const uint16_t tgInitAsTargetTimeout){
 	  memcpy(ndef_file + p1p2_length, rwbuf + C_APDU_DATA, lc);
 	  setResponse(COMMAND_COMPLETE, rwbuf, &sendlen);
 	  tagWrittenByInitiator = true;
-
+      
       uint16_t ndef_length = (ndef_file[0] << 8) + ndef_file[1];
       if ((ndef_length > 0) && (updateNdefCallback != 0)) {
         updateNdefCallback(ndef_file + 2, ndef_length);
@@ -236,12 +234,12 @@ void EmulateTag::setResponse(responseCommand cmd, uint8_t* buf, uint8_t* sendlen
   case TAG_NOT_FOUND:
     buf[0] = R_APDU_SW1_NDEF_TAG_NOT_FOUND;
     buf[1] = R_APDU_SW2_NDEF_TAG_NOT_FOUND;
-    *sendlen = 2;
+    *sendlen = 2;    
     break;
   case FUNCTION_NOT_SUPPORTED:
     buf[0] = R_APDU_SW1_FUNCTION_NOT_SUPPORTED;
     buf[1] = R_APDU_SW2_FUNCTION_NOT_SUPPORTED;
-    *sendlen = 2;
+    *sendlen = 2; 
     break;
   case MEMORY_FAILURE:
     buf[0] = R_APDU_SW1_MEMORY_FAILURE;
